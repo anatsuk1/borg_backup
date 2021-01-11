@@ -55,3 +55,7 @@ Enable and start
 ```
 systemctl enable --now borg-backup.timer
 ```
+
+## Thanks
+Borg developers' GitHub page.
+- @borgbackup https://github.com/borgbackup/borg
