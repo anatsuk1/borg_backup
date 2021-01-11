@@ -16,7 +16,7 @@ In addition to it maintains the backups during 24 hours, 31 days, 104 weeks(2 ye
 
 My environment is:
 <pre>
-Borg Rpository: /var/borg/repo.borg
+Borg Repository: /var/borg/repo.borg
 VG Name: ubuntu-vg
 First LV Name: ubuntu-lv
 Second LV Name: archive
