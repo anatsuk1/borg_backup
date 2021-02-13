@@ -1,0 +1,6 @@
+[Unit]
+Description=JxyMemories
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/etc/jxy-memories.py
