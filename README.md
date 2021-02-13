@@ -1,13 +1,19 @@
 # JxyMemories
 
-**IMPORTANT: NOW UNDER DEVELOPMENT**
-I feel that jxy-memories.py is almost okay but has a trivial bug caused by lvm commands.
-I only finished cheking jxy-memories.py. Some checks still remains.
+# IMPORTANT
+
+## NOW UNDER DEVELOPMENT
+
+**I feel that `jxy-memories.py` is almost okay but has a trivial bug caused by lvm commands.**
+
+I only finished cheking `jxy-memories.py`. Some checks still remains.
+
 I will update this documentation after finishing development.
 
-JxyMemories is a backup script written in Python3 language.
 
 # Overview
+JxyMemories is a backup script written in Python3 language.
+
 JxyMemories has the one script and two systemd unit files.
 
 ## Script
