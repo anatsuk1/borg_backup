@@ -94,8 +94,7 @@ BXXG_ARCHIVE_POSTFIX: Final[str] = "-{now}"
 DEBUG_DRY_RUN: Final[bool] = False
 LOGGER: Final[Logger] = logging.getLogger(__name__)
 LOGGER_LOG_LEVEL: Final[int] = logging.DEBUG
-LOGGER_LOG_FILENAME: Final[str] = "./jxymemories.log"
-# LOGGER_LOG_FILENAME: Final[str] = "/var/log/jxymemories.log"
+LOGGER_LOG_FILENAME: Final[str] = "/var/log/jxymemories.log"
 
 # The base directory where JxyMemories mounts lvm snapshot.
 MOUNT_BASE_DIRECTORY: Final[str]  = "/"
@@ -215,7 +214,7 @@ def tear_down(snapshot_lvname, umount_dir, volume):
     LOGGER.debug("END")
 
 
-def backup_prune(archive_name):
+def prune_archives(archive_name):
     """Prune archives of the repository.
     Args:
         archive_name: The archive name which identifies backup archive created.
@@ -247,7 +246,39 @@ def backup_prune(archive_name):
 
     LOGGER.debug("END")
 
-def run_command(command_line, check=True):
+def logging_last_archives(count):
+    """Print information of the archives backuped last.
+    Args:
+        count: The count of the archives backuped last.
+    """
+
+    LOGGER.debug("STR: {}".format(count))
+
+    BXXG_INFO =         \
+        "borg info "    \
+            "--last "
+
+    info_str = BXXG_INFO
+    info_str += " "
+
+    info_str += str(count)
+    info_str += " "
+
+    info_str += BXXG_REPOSITORY
+    info_str += " "
+
+    run_command(info_str, logging=True)
+
+    LOGGER.debug("END")
+
+
+def run_command(command_line, check=True, logging=False):
+    """Run the command.
+    Args:
+        command_line: The command line containing command and options.
+        check: if check is True, raise exception if command returns error code.
+        logging: if logging is True, log return code and stdout/stderr of the command on log level INFO.
+    """
 
     LOGGER.info("CL: {}".format(command_line))
     if DEBUG_DRY_RUN:
@@ -257,12 +288,17 @@ def run_command(command_line, check=True):
     process = subprocess.run(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if process.returncode != 0:
         LOGGER.error("command line: {}".format(command))
-        LOGGER.error("return code: {}".format(process.returncode))
-        LOGGER.error("return message: {}".format(process.stdout))
+        LOGGER.error("error code: {}".format(process.returncode))
+        LOGGER.error("error message: {}".format(process.stdout))
         if check:
             process.check_returncode()
 
+    if logging:
+        LOGGER.info("CL returncode and stdout/stderr:{}\n{}".format(process.returncode, process.stdout))
+
 def backup_logical_volumes(backup=True):
+    """Start to backup the Logical volumes and tear down.
+    """
 
     LOGGER.debug("STR: {}".format(backup))
 
@@ -286,8 +322,6 @@ def backup_logical_volumes(backup=True):
 
 def start_backup():
     """Start to backup the Logical volumes and prune archives of the repository.
-    Args:
-        archive_name: The archive name which identifies backup archive created.
     """
 
     LOGGER.debug("STR")
@@ -302,7 +336,10 @@ def start_backup():
     # Prune archives of the repository.
     for volume in LOGICAL_VOLUMES:
         # prune archives of the repository
-        backup_prune(volume[1])
+        prune_archives(volume[1])
+
+    # info the backup archives of the repository.
+    logging_last_archives(len(LOGICAL_VOLUMES))
 
     LOGGER.debug("END")
 
