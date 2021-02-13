@@ -1,11 +1,18 @@
-# borg_backup
-The backup script for borg in shell language and two the systemd unit files.
+# JxyMemories
+
+**IMPORTANT: NOW UNDER DEVELOPMENT**
+I feel that jxy-memories.py is almost okay but has a trivial bug caused by lvm commands.
+I only finished cheking jxy-memories.py. Some checks still remains.
+I will update this documentation after finishing development.
+
+JxyMemories is a backup script written in Python3 language.
 
 # Overview
+JxyMemories has the one script and two systemd unit files.
 
 ## Script
 
-backup_by_borg.sh is the script that snapshots, mounts, backups, unmounts, and removes two LVM LV volumes.
+jxy-memories.py is the backup script that snapshots, mounts, backups, unmounts, and removes two LVM LV volumes.
 In addition to it maintains the backups during 24 hours, 31 days, 104 weeks(2 years), others are pruned.
 
 # Usage
@@ -40,16 +47,21 @@ SNAP_NAME="-borgsnapshot"
 
 ## Deploy
 
-Change characters in `.borg-passphrase` to your password on Borg repository, such as from `xxxxxxxx` to `<your password>`.
+Rename the passphrase file to .borg-passphrase
+```bash
+mv example.borg-passphrase .borg-passphrase
+```
+Change invalid characters in `.borg-passphrase` to your password on Borg repository.
+Such as from `xxxxxxxx` to `<your password>`.
 
 Copy the backup script file and to the path.
 ```bash
-cp backup_by_borg.sh .borg-passphrase /usr/local/etc/
+cp jxy-memories.py .borg-passphrase /usr/local/etc/
 ```
 
 Copy the systemd unit files to the systemd path.
 ```bash
-cp borg-backup.service borg-backup.timer /etc/systemd/system
+cp jxy-memories.service jxy-memories.timer /etc/systemd/system
 ```
 Enable and start
 ```
