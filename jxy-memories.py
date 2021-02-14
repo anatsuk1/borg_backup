@@ -93,7 +93,7 @@ BXXG_ARCHIVE_POSTFIX: Final[str] = "-{now}"
 ######################
 DEBUG_DRY_RUN: Final[bool] = False
 LOGGER: Final[Logger] = logging.getLogger(__name__)
-LOGGER_LOG_LEVEL: Final[int] = logging.DEBUG
+LOGGER_LOG_LEVEL: Final[int] = logging.INFO
 LOGGER_LOG_FILENAME: Final[str] = "/var/log/jxymemories.log"
 
 # The base directory where JxyMemories mounts lvm snapshot.
@@ -326,8 +326,10 @@ def start_backup():
 
     LOGGER.debug("STR")
 
-    # Get password from passphrase files in the directory of this command.
-    with open(BXXG_PASS_PHRASE, mode="r") as passphrase:
+    # Get password from passphrase files in the directory of this script file.
+    base_dir = os.path.dirname(__file__)
+    passphrase_file = os.path.join(base_dir, BXXG_PASS_PHRASE)
+    with open(passphrase_file, mode="r") as passphrase:
         os.environ["BORG_PASSPHRASE"] = passphrase.read()
 
     # Start to backup the Logical volumes.
