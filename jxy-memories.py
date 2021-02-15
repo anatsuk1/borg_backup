@@ -41,6 +41,15 @@ from logging import handlers
 # Configure #
 #############
 #
+# The Logical Volumes which JxyMemories backups
+# Note: LVM logical volumes. Pick up from the output of `lvdisplay` and `df -T` commands.
+LOGICAL_VOLUMES: Final[tuple] = (
+    # LV Path,                   filesystem type
+    ("/dev/ubuntu-vg/archive",   "ext4"),
+    ("/dev/ubuntu-vg/ubuntu-lv", "ext4"),
+)
+
+#
 # The path to BorgBackup repository.
 #
 BXXG_REPOSITORY: Final[str] = "/var/borg/repo.borg"
@@ -51,17 +60,8 @@ BXXG_REPOSITORY: Final[str] = "/var/borg/repo.borg"
 BXXG_PASS_PHRASE: Final[str] = ".borg-passphrase"
 
 #
-# The Logical Volumes which JxyMemories backups
-# Note: LVM logical volumes. Pick up from the output of `lvdisplay` and `df -T` command.
-LOGICAL_VOLUMES: Final[tuple] = (
-    # LV Path,                   LV Name,     VG Name,     filesystem type
-    ("/dev/ubuntu-vg/archive",   "archive",   "ubuntu-vg", "ext4"),
-    ("/dev/ubuntu-vg/ubuntu-lv", "ubuntu-lv", "ubuntu-vg", "ext4"),
-)
-
-#
 # The numbers of keeping latest archives related to times when JxyMemories prunes.
-# WARNING: More older archives are removed from the repository.
+# WARNING: More earlier archives are removed from the repository.
 BXXG_PRUNE_KEEP_NUMBERS: Final[dict] = {
     "--keep-secondly": 0,
     "--keep-minutely": 0,
@@ -75,8 +75,8 @@ BXXG_PRUNE_KEEP_NUMBERS: Final[dict] = {
 #
 # The patterns that JxyMemories excludes files from backup archives.
 # Note: If the patterns is absolute path, JxyMemories will combine 
-#       the mount path to lvm snapshot with the absolute path.
-BXXG_EXCLUDE_PATTERNS: Final[list]  = (
+#       the mount point to lvm snapshot with the absolute path.
+BXXG_EXCLUDE_PATTERNS: Final[tuple]  = (
     "/swap.img",
     "/root/.cache",
     "/home/*/.cache/*",
@@ -126,25 +126,27 @@ UMOUNT: Final[str]  = "umount -f {}"
 
 
 
-def mount_snapshot(snapshot_lvname, mount_dir, volume):
-    """Create lvm snapshot and mount the snapshot on the path to directory.
+def mount_snapshot(snapshot_lvname, mount_dir, lvpath, fs_type):
+    """Create lvm snapshot from logocal volume and mount the snapshot on the path to directory.
     Args:
         snapshot_lvname: The name of lvm snapshot which this function create.
         mount_dir: The path to directory where this function mounts lvm snapshot.
-        volume: The logical volume informations which is backuped.
+        lvpath: The logical volume which is backuped.
+        fs_type: The filesystem type of the logical volume.
     """
 
-    LOGGER.debug("STR: {} {} {}".format(snapshot_lvname, mount_dir, volume))
+    LOGGER.debug("STR: {} {} {} {}".format(snapshot_lvname, mount_dir, lvpath, fs_type))
+
+    device_path = os.path.dirname(lvpath)
+    snapshot_lvpath = os.path.join(device_path, snapshot_lvname)
 
     mkdir_str = MKDIR.format(mount_dir)
     run_command(mkdir_str)
 
-    lvcreate_str = LVCREATE_SNAPSHOT.format(snapshot_lvname, volume[0])
+    lvcreate_str = LVCREATE_SNAPSHOT.format(snapshot_lvname, lvpath)
     run_command(lvcreate_str)
 
-    base_dev_dir = os.path.dirname(volume[0])
-    snapshot_dev_dir = os.path.join(base_dev_dir, snapshot_lvname)
-    mount_str = MOUNT.format(volume[3], snapshot_dev_dir, mount_dir)
+    mount_str = MOUNT.format(fs_type, snapshot_lvpath, mount_dir)
     run_command(mount_str)
 
     LOGGER.debug("END")
@@ -190,22 +192,19 @@ def backup_snapshot(archive_name, mount_dir):
 
     LOGGER.debug("END")
 
-def tear_down(snapshot_lvname, umount_dir, volume):
+def tear_down(snapshot_lvpath, umount_dir):
     """Unmount the path to directory and remove lvm snapshot.
     Args:
-        snapshot_lvname: The name of lvm snapshot which mount_snapshot() function created.
-        umount_dir: The path to directory where this function backups.
+        snapshot_lvpath: The path of lvm snapshot which mount_snapshot() function created.
+        umount_dir: The path to directory where mount_snapshot() function mount.
     """
 
-    LOGGER.debug(": {} {}".format(snapshot_lvname, umount_dir))
+    LOGGER.debug(": {} {}".format(snapshot_lvpath, umount_dir))
 
-    base_dev_dir = os.path.dirname(volume[0])
-    snapshot_dev_dir = os.path.join(base_dev_dir, snapshot_lvname)
-
-    umount_str = UMOUNT.format(snapshot_dev_dir)
+    umount_str = UMOUNT.format(snapshot_lvpath)
     run_command(umount_str, False)
 
-    lvremove_str = LVREMOVE.format(snapshot_dev_dir)
+    lvremove_str = LVREMOVE.format(snapshot_lvpath)
     run_command(lvremove_str, False)
 
     rmdir_str = RMDIR.format(umount_dir)
@@ -276,8 +275,8 @@ def run_command(command_line, check=True, logging=False):
     """Run the command.
     Args:
         command_line: The command line containing command and options.
-        check: if check is True, raise exception if command returns error code.
-        logging: if logging is True, log return code and stdout/stderr of the command on log level INFO.
+        check: if True, raise exception if command returns error code.
+        logging: if True, log return code and stdout/stderr of the command on log level INFO.
     """
 
     LOGGER.info("CL: {}".format(command_line))
@@ -294,7 +293,7 @@ def run_command(command_line, check=True, logging=False):
             process.check_returncode()
 
     if logging:
-        LOGGER.info("CL returncode and stdout/stderr:{}\n{}".format(process.returncode, process.stdout))
+        LOGGER.info("CL returncode and stdout/stderr: {}\n{}".format(process.returncode, process.stdout))
 
 def backup_logical_volumes(backup=True):
     """Start to backup the Logical volumes and tear down.
@@ -304,18 +303,22 @@ def backup_logical_volumes(backup=True):
 
     # Start to backup the Logical volumes.
     for volume in LOGICAL_VOLUMES:
-        snapshot_lvname = volume[1] + SNAPSHOT_POSTFIX
+        lvname = os.path.basename(volume[0])
+        snapshot_lvname = lvname + SNAPSHOT_POSTFIX
+        device_path = os.path.dirname(volume[0])
+        snapshot_lvpath = os.path.join(device_path, snapshot_lvname)
+
         mount_dir = os.path.join(MOUNT_BASE_DIRECTORY, snapshot_lvname)
 
         if backup:
             # create and mount snapshot
-            mount_snapshot(snapshot_lvname, mount_dir, volume)
+            mount_snapshot(snapshot_lvname, mount_dir, volume[0], volume[1])
 
             # backup snapshot mounted
-            backup_snapshot(volume[1], mount_dir)
+            backup_snapshot(lvname, mount_dir)
 
         # tear down
-        tear_down(snapshot_lvname, mount_dir, volume)
+        tear_down(snapshot_lvpath, mount_dir)
 
     LOGGER.debug("END")
 
@@ -337,8 +340,9 @@ def start_backup():
 
     # Prune archives of the repository.
     for volume in LOGICAL_VOLUMES:
+        lvname = os.path.basename(volume[0])
         # prune archives of the repository
-        prune_archives(volume[1])
+        prune_archives(lvname)
 
     # info the backup archives of the repository.
     logging_last_archives(len(LOGICAL_VOLUMES))
