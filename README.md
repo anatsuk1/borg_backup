@@ -7,18 +7,18 @@ JxyMemories is a backup script written in Python3 language.
 JxyMemories consist of one Python3 script and two systemd unit files.
 
 The feature of JxyMemories:
-- Backup logical volume of LVM.
-- Prune the old backups automately.
+- Backup a logical volume of LVM.
+- Prune the earlier backups automatically.
 - Show information of the backups.
 - Continuously backup on `systemd` timer.
 
-You can restore logical volume of LVM from the backups in BorgBackup repository, of course you can restore a file from the backups.
+You can restore a logical volume of LVM from the backups in a BorgBackup repository, of course you can restore a file from the backups.
 
 ## Python3 Script
 
 "Backup" feature of jxy-memories.py:
-- Create the snapshot from logical volume of LVM.
-- Mount the snapshot at everwhere.
+- Create a snapshot from a logical volume of LVM.
+- Mount the snapshot everwhere.
 - Backup the the snapshot mounted.
 
 "Prune" feature of jxy-memories.py:
@@ -26,7 +26,7 @@ You can restore logical volume of LVM from the backups in BorgBackup repository,
 
 ## systemd unit files.
 
-Provide systemd unit file for Interval Timer.
+Provide systemd unit files for Interval Timer.
 - jxy-memories.timer is systemd timer unit.
 - jxy-memories.service is systemd sevice unit.
 
@@ -39,10 +39,9 @@ The configuration features in JxyMemories.
 
 ### Configure JxyMemories
 
-`jxy-memories.py` has many configuration variable in its own source.
+`jxy-memories.py` has many configuration variables in its source code.
 
-Let's assigne your configuration to Name of variable!
-
+Assigne your environment to the following configururations.
 
 ### Explain JxyMemories configururations
 
@@ -62,7 +61,7 @@ BXXG_EXCLUDE_PATTERNS|The patterns that JxyMemories excludes files from backup a
 LOGICAL_VOLUMES is an array of which an element conatains LV Path and filesystem type.
 An element contains LV Path at the first element, filesystem type at the second element.
 
-Pick up LV Path and filesystem type from the output of `lvdisplay` and `df -T` commands.
+Pick up LV Path from the output of `lvdisplay` command and filesystem type from the output of `df -T` command
 
 Initial Configuration is:
 ```python3::jxy-memories.py
@@ -75,7 +74,7 @@ Initial Configuration is:
 
 **BXXG_PRUNE_KEEP_NUMBERS**
 
-BXXG_PRUNE_KEEP_NUMBERS is a dictoinary of which an element conatains `--keep-<interval>` of `borg prune` optional arguments.
+BXXG_PRUNE_KEEP_NUMBERS is a dictionary of which an element conatains `--keep-<interval>` of `borg prune` optional arguments.
 An element contains `--keep-<interval>` string itself at Key, `--keep-<interval>` parameter at Value.
 
 `borg prune --help` with more details.
@@ -195,7 +194,7 @@ sudo borg init -e repokey /var/borg/repo.borg
 
 The command means initialize BorgBackup repository with passphrase.
 
-See more details, if you need, at [Easy To Ese on Official BorgBackup repository](https://github.com/borgbackup/borg/blob/master/README.rst#easy-to-use)
+See more details [Easy To Use on Official BorgBackup repository](https://github.com/borgbackup/borg/blob/master/README.rst#easy-to-use) if needed.
 
 ### Mount Backups
 Mount Backup Repository of fuse.borgfs filesystem type.
