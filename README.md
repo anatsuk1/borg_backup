@@ -103,11 +103,12 @@ JxyMemories will combine the mount point to lvm snapshot with Exclude Pattern if
 Initial Configuration is:
 ```python3::jxy-memories.py
 (
+    "/tmp"
+    "/var/cache",
+    "/var/tmp",
     "/swap.img",
     "/root/.cache",
-    "/home/*/.cache/*",
-    "/var/cache/*",
-    "/var/tmp/*",
+    "/home/*/.cache",
 )
 ```
 
@@ -154,24 +155,29 @@ UMOUNT: Final[str]  = "umount -f {}"
 
 ## Deploy
 
-Create the passphrase file containing your passphrase to access BorgBackup repository.
+Move the current directory to it contains this software.
 ```bash
-echo <your passphrase on BorgBackup> > .borg-passphrase
+~$ cd jxy-memories
 ```
 
-Copy `jxy-memories.py` and the passphrase file to `/usr/local/etc/` directory.
+Create the passphrase file containing your passphrase to access BorgBackup repository.
 ```bash
-sudo cp jxy-memories.py .borg-passphrase /usr/local/etc/
+~jxy-memories$ echo -n <your passphrase on BorgBackup> > .borg-passphrase
+```
+
+Copy the current directory(aka `jxy-memories` directory) to `/usr/local/lib/`.
+```bash
+jxy-memories$ sudo cp -R `pwd` /usr/local/lib/
 ```
 
 Copy the systemd unit files to the systemd directory.
 ```bash
-cp jxy-memories.service jxy-memories.timer /etc/systemd/system
+jxy-memories$ sudo cp jxy-memories.service jxy-memories.timer /etc/systemd/system
 ```
 
 Enable and start schedule timer.
 ```
-systemctl enable --now borg-backup.timer
+jxy-memories$ sudo systemctl enable --now jxy-memories.timer
 ```
 
 ## Environment

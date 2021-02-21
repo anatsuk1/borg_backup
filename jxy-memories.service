@@ -3,4 +3,4 @@ Description=JxyMemories
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/etc/jxy-memories.py
+ExecStart=/usr/local/lib/jxy-memories/jxy-memories.py

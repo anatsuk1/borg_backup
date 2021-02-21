@@ -2,29 +2,30 @@
 
 # Copyright (c) 2021 anatsuk1. All rights reserved.
 # JxyMemories software is licensed under BSD 2-Clause license.
+"""
+BSD 2-Clause License
 
-# BSD 2-Clause License
-# 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-# 
-# 1. Redistributions of source code must retain the above copyright notice, this
-#    list of conditions and the following disclaimer.
-# 
-# 2. Redistributions in binary form must reproduce the above copyright notice,
-#    this list of conditions and the following disclaimer in the documentation
-#    and/or other materials provided with the distribution.
-# 
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
 
 from typing import Final
 
@@ -34,7 +35,6 @@ import subprocess
 import logging
 from logging.handlers import RotatingFileHandler
 from logging import Logger
-from logging import handlers
 
 
 #############
@@ -74,14 +74,15 @@ BXXG_PRUNE_KEEP_NUMBERS: Final[dict] = {
 
 #
 # The patterns that JxyMemories excludes files from backup archives.
-# Note: If the patterns is absolute path, JxyMemories will combine 
+# Note: If the patterns is absolute path, JxyMemories will combine
 #       the mount point to lvm snapshot with the absolute path.
-BXXG_EXCLUDE_PATTERNS: Final[tuple]  = (
+BXXG_EXCLUDE_PATTERNS: Final[tuple] = (
+    "/tmp",
+    "/var/cache",
+    "/var/tmp",
     "/swap.img",
     "/root/.cache",
-    "/home/*/.cache/*",
-    "/var/cache/*",
-    "/var/tmp/*",
+    "/home/*/.cache",
 )
 
 # The archive prefix and postfix with which combine archive name.
@@ -97,7 +98,7 @@ LOGGER_LOG_LEVEL: Final[int] = logging.INFO
 LOGGER_LOG_FILENAME: Final[str] = "/var/log/jxymemories.log"
 
 # The base directory where JxyMemories mounts lvm snapshot.
-MOUNT_BASE_DIRECTORY: Final[str]  = "/"
+MOUNT_BASE_DIRECTORY: Final[str] = "/"
 
 # The snapshot postfix with which JxyMemories combine LV Name.
 SNAPSHOT_POSTFIX: Final[str] = "-jxy"
@@ -110,20 +111,19 @@ SNAPSHOT_POSTFIX: Final[str] = "-jxy"
 # str.format replace "{}" in the command to variables.
 
 # Replace `{}` to mount path of snapshot LV.
-MKDIR: Final[str]  = "mkdir -p {}"
+MKDIR: Final[str] = "mkdir -p {}"
 # Replace `{}` to mount path of snapshot LV.
-RMDIR: Final[str]  = "rmdir {}"
+RMDIR: Final[str] = "rmdir {}"
 
 # Replace 1st `{}` to snapshot LV Name, 2nd `{}` LV Path of backup.
-LVCREATE_SNAPSHOT: Final[str]  = "lvcreate -s -l 100%FREE -n {} {}"
+LVCREATE_SNAPSHOT: Final[str] = "lvcreate -s -l 100%FREE -n {} {}"
 # Replace `{}` to mount path of snapshot LV.
-LVREMOVE: Final[str]  = "lvremove -f {}"
+LVREMOVE: Final[str] = "lvremove -f {}"
 
 # Replace 1st `{}` to filesystem type, 2nd `{}` to snapshot LV Path, 3rd `{}` to mount path of snapshot LV.
-MOUNT: Final[str]  = "mount -r -t {} {} {}"
+MOUNT: Final[str] = "mount -r -t {} {} {}"
 # Replace `{}` to mount path of snapshot LV.
-UMOUNT: Final[str]  = "umount -f {}"
-
+UMOUNT: Final[str] = "umount -f {}"
 
 
 def mount_snapshot(snapshot_lvname, mount_dir, lvpath, fs_type):
@@ -151,6 +151,7 @@ def mount_snapshot(snapshot_lvname, mount_dir, lvpath, fs_type):
 
     LOGGER.debug("END")
 
+
 def backup_snapshot(archive_name, mount_dir):
     """Backup the path to directory.
     Args:
@@ -160,16 +161,16 @@ def backup_snapshot(archive_name, mount_dir):
 
     LOGGER.debug("STR: {} {}".format(archive_name, mount_dir))
 
-    BXXG_CREATE =                   \
-        "borg create "              \
-            "--verbose "            \
-            "--filter AME "         \
-            "--list "               \
-            "--stats "              \
-            "--show-rc "            \
-            "--compression lz4 "    \
-            "--one-file-system "    \
-            "--exclude-caches "
+    BXXG_CREATE =               \
+        "borg create "          \
+        "--verbose "            \
+        "--filter AME "         \
+        "--list "               \
+        "--stats "              \
+        "--show-rc "            \
+        "--compression lz4 "    \
+        "--one-file-system "    \
+        "--exclude-caches "
     BXXG_OPTIONAL_EXCLUDE = "--exclude"
 
     create_str = BXXG_CREATE
@@ -191,6 +192,7 @@ def backup_snapshot(archive_name, mount_dir):
     run_command(create_str)
 
     LOGGER.debug("END")
+
 
 def tear_down(snapshot_lvpath, umount_dir):
     """Unmount the path to directory and remove lvm snapshot.
@@ -221,10 +223,10 @@ def prune_archives(archive_name):
 
     LOGGER.debug("STR: {}".format(archive_name))
 
-    BXXG_PRUNE =            \
-        "borg prune "       \
-            "--list "       \
-            "--show-rc "
+    BXXG_PRUNE =        \
+        "borg prune "   \
+        "--list "       \
+        "--show-rc "
     BXXG_OPTIONAL_PREFIX = "--prefix"
 
     prune_str = BXXG_PRUNE
@@ -245,6 +247,7 @@ def prune_archives(archive_name):
 
     LOGGER.debug("END")
 
+
 def logging_last_archives(count):
     """Print information of the archives backuped last.
     Args:
@@ -255,7 +258,7 @@ def logging_last_archives(count):
 
     BXXG_INFO =         \
         "borg info "    \
-            "--last "
+        "--last "
 
     info_str = BXXG_INFO
     info_str += " "
@@ -294,6 +297,7 @@ def run_command(command_line, check=True, logging=False):
 
     if logging:
         LOGGER.info("CL returncode and stdout/stderr: {}\n{}".format(process.returncode, process.stdout))
+
 
 def backup_logical_volumes(backup=True):
     """Start to backup the Logical volumes and tear down.
@@ -356,11 +360,11 @@ if __name__ == "__main__":
     LOGGER.setLevel(LOGGER_LOG_LEVEL)
     format = logging.Formatter("[%(asctime)s][%(levelname)-5.5s][%(name)s]%(filename)s:%(lineno)d %(funcName)s: %(message)s")
 
-    error_handler = logging.StreamHandler(sys.stderr)
-    error_handler.setFormatter(format)
-    LOGGER.addHandler(error_handler)
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(format)
+    LOGGER.addHandler(stdout_handler)
 
-    logfile_handler = handlers.RotatingFileHandler(LOGGER_LOG_FILENAME, maxBytes=(1048576*5), backupCount=2)
+    logfile_handler = RotatingFileHandler(LOGGER_LOG_FILENAME, maxBytes=(1048576 * 5), backupCount=2)
     logfile_handler.setFormatter(format)
     LOGGER.addHandler(logfile_handler)
 
@@ -369,7 +373,7 @@ if __name__ == "__main__":
     try:
         # Start backup
         start_backup()
-    except:
+    except BaseException:
         # tear down if exception occur
         backup_logical_volumes(False)
         raise
