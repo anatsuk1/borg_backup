@@ -44,8 +44,8 @@ from logging import Logger
 # The Logical Volumes which JxyMemories backups
 # Note: LVM logical volumes. Pick up from the output of `lvdisplay` and `df -T` commands.
 LOGICAL_VOLUMES: Final[tuple] = (
-    # LV Path,                   filesystem type
-    ("/dev/ubuntu-vg/archive",   "ext4"),
+    # LV Path,                 filesystem type
+    ("/dev/ubuntu-vg/archive", "ext4"),
     ("/dev/ubuntu-vg/ubuntu-lv", "ext4"),
 )
 

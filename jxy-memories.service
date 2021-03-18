@@ -4,3 +4,4 @@ Description=JxyMemories
 [Service]
 Type=oneshot
 ExecStart=/usr/local/lib/jxy-memories/jxy-memories.py
+StandardOutput=file:/dev/null

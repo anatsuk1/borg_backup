@@ -64,10 +64,10 @@ An element contains LV Path at the first element, filesystem type at the second 
 Pick up LV Path from the output of `lvdisplay` command and filesystem type from the output of `df -T` command
 
 Initial Configuration is:
-```python3::jxy-memories.py
+```python::jxy-memories.py
 (
-    # LV Path,                   filesystem type
-    ("/dev/ubuntu-vg/archive",   "ext4"),
+    # LV Path,                 filesystem type
+    ("/dev/ubuntu-vg/archive", "ext4"),
     ("/dev/ubuntu-vg/ubuntu-lv", "ext4"),
 )
 ```
@@ -80,7 +80,7 @@ An element contains `--keep-<interval>` string itself at Key, `--keep-<interval>
 `borg prune --help` with more details.
 
 Initial Configuration is:
-```python3::jxy-memories.py
+```python::jxy-memories.py
 {
     "--keep-secondly": 0,
     "--keep-minutely": 0,
@@ -101,7 +101,7 @@ JxyMemories will combine the mount point to lvm snapshot with Exclude Pattern if
 `borg create --help` with more details.
 
 Initial Configuration is:
-```python3::jxy-memories.py
+```python::jxy-memories.py
 (
     "/tmp"
     "/var/cache",
@@ -114,7 +114,7 @@ Initial Configuration is:
 
 ## Advanced Configure
 
-```
+```python::jxy-memories.py
 ######################
 # Advanced Configure #
 ######################
@@ -162,22 +162,22 @@ Move the current directory to it contains this software.
 
 Create the passphrase file containing your passphrase to access BorgBackup repository.
 ```bash
-~jxy-memories$ echo -n <your passphrase on BorgBackup> > .borg-passphrase
+~/jxy-memories$ echo -n <your passphrase on BorgBackup> > .borg-passphrase
 ```
 
 Copy the current directory(aka `jxy-memories` directory) to `/usr/local/lib/`.
 ```bash
-jxy-memories$ sudo cp -R `pwd` /usr/local/lib/
+~/jxy-memories$ sudo cp -R `pwd` /usr/local/lib/
 ```
 
 Copy the systemd unit files to the systemd directory.
 ```bash
-jxy-memories$ sudo cp jxy-memories.service jxy-memories.timer /etc/systemd/system
+~/jxy-memories$ sudo cp jxy-memories.service jxy-memories.timer /etc/systemd/system
 ```
 
 Enable and start schedule timer.
-```
-jxy-memories$ sudo systemctl enable --now jxy-memories.timer
+```bash
+~/jxy-memories$ sudo systemctl enable --now jxy-memories.timer
 ```
 
 ## Environment
@@ -188,6 +188,7 @@ JxyMemories is running but not limited with the followings.
 - LVM: 2.03.07(2) (2019-11-30)
 - Python: 3.8.6
 - BorgBuckup: 1.1.15
+- systemd: 246 
 
 ## For your convience
 
